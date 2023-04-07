@@ -31,7 +31,7 @@ files_list = {
     f"{project_name}/predictor.py",
     f"{project_name}/utils.py",
     "configs/config.yaml",
-    "requirements.py",
+    "requirements.txt",
     "setup.py",
     "main.py",
     "data_dump.py"

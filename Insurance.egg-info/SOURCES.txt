@@ -1,0 +1,16 @@
+LICENSE
+README.md
+setup.py
+Insurance.egg-info/PKG-INFO
+Insurance.egg-info/SOURCES.txt
+Insurance.egg-info/dependency_links.txt
+Insurance.egg-info/top_level.txt
+insurance_pred/__init__.py
+insurance_pred/config.py
+insurance_pred/exception.py
+insurance_pred/predictor.py
+insurance_pred/utils.py
+insurance_pred/components/__init__.py
+insurance_pred/entity/__init__.py
+insurance_pred/logger/__init__.py
+insurance_pred/pipeline/__init__.py
