@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 import os
 
-LOG_DIR = "Insurance_log"
+LOG_DIR = "Log-File"
 
 CURRENT_TIME_STAMP = f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}"
 
