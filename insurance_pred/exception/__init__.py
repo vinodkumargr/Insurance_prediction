@@ -12,7 +12,7 @@ class InsuranceException(Exception):
         _, _, exc_tb = error_detail.exc_info()
         line_number = exc_tb.tb_frame.f_lineno
         
-        # extracting file name from eception trackbook
+        # extracting file name from exception trackbook
         file_name = exc_tb.tb_frame.f_code.co_filename
         
         #preparing error message
