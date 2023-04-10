@@ -10,7 +10,8 @@ from insurance_pred.logger import logging
 def get_collection_as_df(database_name:str, collection_name:str):
     try:
         logging.info(f"Reading data from database :{database_name} and collection name : {collection_name}")
-        df = pd.DataFrame(mongo_client[database_name][collection_name].find())
+        logging.info("printing this line from utils.py")
+        df = pd.DataFrame(list(mongo_client[database_name][collection_name].find()))
         logging.info(f"Total columns found : {df.columns}")
         if "index" in df.columns:
             logging.info("Dropping columns: Index")
