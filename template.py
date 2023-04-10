@@ -31,6 +31,8 @@ files_list = {
     f"{project_name}/predictor.py",
     f"{project_name}/utils.py",
     "configs/config.yaml",
+    ".gitignore",
+    ".env",
     "requirements.txt",
     "setup.py",
     "main.py",

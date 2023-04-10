@@ -4,7 +4,7 @@ import os
 import sys
 from insurance_pred.exception import InsuranceException
 from insurance_pred.config import mongo_client
-from insurance_pred import logging
+from insurance_pred.logger import logging
 
 
 def get_collection_as_df(database_name:str, collection_name:str):
@@ -12,10 +12,9 @@ def get_collection_as_df(database_name:str, collection_name:str):
         logging.info(f"Reading data from database :{database_name} and collection name : {collection_name}")
         df = pd.DataFrame(mongo_client[database_name][collection_name].find())
         logging.info(f"Total columns found : {df.columns}")
-        drop_columns = ["id" , "index"]
-        for i in drop_columns:
-            if i in df.columns:
-                df = df.drop(columns=i, axis=1, inplace=True)
+        if "index" in df.columns:
+            logging.info("Dropping columns: Index")
+            df = df.drop("index", axis=1)
         logging.info(f"Dataframe shape : {df.shape}")
         return df
     
