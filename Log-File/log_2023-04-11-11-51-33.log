@@ -1,5 +1,0 @@
-[2023-04-11 11:51:51,674] root - INFO - Reading data from database: INSURANCE and collection: INSURANCE_PROJECT
-[2023-04-11 11:51:53,949] root - INFO - Found total columns: Index(['_id', 'age', 'sex', 'bmi', 'children', 'smoker', 'region', 'charges'], dtype='object')
-[2023-04-11 11:51:54,012] root - INFO - Dropping column: _id
-[2023-04-11 11:51:54,027] root - INFO - Row and columns in df: (1338, 7)
-
