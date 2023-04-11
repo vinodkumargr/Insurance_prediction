@@ -1,5 +1,7 @@
-import os, sys, datetime
+import os, sys
+from datetime import datetime
 from insurance_pred.exception import InsuranceException
+from insurance_pred.logger import logging
 
 
 FILE_NAME = "insurance.csv"
@@ -7,7 +9,7 @@ TRAIN_FILE_NAME = "train.csv"
 TEST_FILE_NAME = "test.csv"
 
 class TrainingPipelineConfig:
-    def __int__(self):
+    def __init__(self):
         try:
             self.artifact_dir = os.path.join(os.getcwd(),"artifact",f"{datetime.now().strftime('%m%d%Y__%H%M%S')}")
         except Exception as e:
@@ -30,8 +32,10 @@ class DataIngestionConfig:
 
             
 # Convert data into dict
-    def to_dict(self)->dict:
+    def convert(self):
         try:
-            return self.__dict__
+            print_data = self.__dict__
+            logging.info(f"printing dict data : {print_data}")
+            return print_data
         except Exception  as e:
             raise InsuranceException(e,sys)
