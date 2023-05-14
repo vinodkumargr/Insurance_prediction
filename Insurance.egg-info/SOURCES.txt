@@ -11,7 +11,10 @@ insurance_pred/exception.py
 insurance_pred/predictor.py
 insurance_pred/utils.py
 insurance_pred/components/__init__.py
+insurance_pred/components/data_ingestion.py
 insurance_pred/entity/__init__.py
+insurance_pred/entity/artifacts_entity.py
+insurance_pred/entity/config_entity.py
 insurance_pred/exception/__init__.py
 insurance_pred/logger/__init__.py
 insurance_pred/pipeline/__init__.py
