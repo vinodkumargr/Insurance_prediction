@@ -39,3 +39,8 @@ class DataIngestionConfig:
             return print_data
         except Exception  as e:
             raise InsuranceException(e,sys)
+
+
+class DataValidationConfig:
+    def __init__(self, training_pipeline_config:TrainingPipelineConfig):
+        pass
