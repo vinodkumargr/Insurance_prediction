@@ -10,8 +10,6 @@ import numpy as np
 from insurance_pred.config import TARGET_COLUMN
 
 
-
-
 class DataValidation:
 
 
@@ -47,7 +45,8 @@ class DataValidation:
             return df
         except Exception as e:
             raise InsuranceException(e, sys)
-    #     print("dsgfg")
+        
+
     def is_required_columns_exists(self,base_df:pd.DataFrame,current_df:pd.DataFrame,report_key_name:str)->bool:
         try:
            
@@ -67,34 +66,36 @@ class DataValidation:
         except Exception as e:
             raise InsuranceException(e, sys)
 
-    def data_drift(self,base_df:pd.DataFrame,current_df:pd.DataFrame,report_key_name:str):
+    def data_drift(self, base_df: pd.DataFrame, current_df: pd.DataFrame, report_key_name: str):
         try:
-            drift_report=dict()
-
+            drift_report = dict()
             base_columns = base_df.columns
             current_columns = current_df.columns
 
             for base_column in base_columns:
-                base_data,current_data = base_df[base_column],current_df[base_column]
-                
-                same_distribution =ks_2samp(base_data,current_data)
+                base_data, current_data = base_df[base_column], current_df[base_column]
 
-                if same_distribution.pvalue>0.05:
-                    #We are accepting null hypothesis
-                    drift_report[base_column]={
-                        "pvalues":float(same_distribution.pvalue),
+                same_distribution = ks_2samp(base_data, current_data)
+
+                if same_distribution.pvalue > 0.05:
+                    # We are accepting the null hypothesis
+                    drift_report[base_column] = {
+                        "pvalues": float(same_distribution.pvalue),
                         "same_distribution": True
                     }
                 else:
-                    drift_report[base_column]={
-                        "pvalues":float(same_distribution.pvalue),
-                        "same_distribution":False
+                    drift_report[base_column] = {
+                        "pvalues": float(same_distribution.pvalue),
+                        "same_distribution": False
                     }
-                    #different distribution
 
-            self.validation_error[report_key_name]=drift_report
+                self.validation_error[report_key_name] = drift_report
+
         except Exception as e:
             raise InsuranceException(e, sys)
+
+                    
+    
 
     def initiate_data_validation(self)->artifacts_entity.DataValidationArtifact:
         try:
@@ -102,6 +103,7 @@ class DataValidation:
             base_df = pd.read_csv(self.data_validation_config.base_file_path)
             base_df.replace({"na":np.NAN},inplace=True)
             logging.info(f"Replace na value in base df")
+            
             #base_df has na as null
             logging.info(f"Drop null values colums from base df")
             base_df=self.drop_missing_values_columns(df=base_df,report_key_name="missing_values_within_base_dataset")
