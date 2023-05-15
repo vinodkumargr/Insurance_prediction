@@ -31,7 +31,7 @@ class DataIngestion: # data divide into test, train and validate
             # replace an with NAN
             df.replace(to_replace = "na", value=np.NAN, inplace=True)
             
-            # save data in future store
+            # create folder in future store
             logging.info("create feature store folder, if not available")
             feature_store_dir = os.path.dirname(self.data_ingestion_config.feature_store_file_path)
             os.makedirs(feature_store_dir, exist_ok=True)

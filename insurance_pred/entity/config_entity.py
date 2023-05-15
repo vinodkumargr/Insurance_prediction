@@ -3,7 +3,6 @@ from datetime import datetime
 from insurance_pred.exception import InsuranceException
 from insurance_pred.logger import logging
 
-
 FILE_NAME = "insurance.csv"
 TRAIN_FILE_NAME = "train.csv"
 TEST_FILE_NAME = "test.csv"
@@ -43,5 +42,9 @@ class DataIngestionConfig:
 
 class DataValidationConfig:
     def __init__(self, training_pipeline_config:TrainingPipelineConfig):
-        self.validation_dir = os.path.join(training_pipeline_config.entity.artifact_dir, "data_validation")
-        self,report_file_path = os.path.join(self.data_validation_dir, "report.yaml")
+        self.data_validation_dir = os.path.join(training_pipeline_config.artifact_dir, "data_validation")
+        self.report_file_path = os.path.join(self.data_validation_dir, "report.yaml")
+        self.missing_threshold=0.2
+        self.base_file_path=os.path.join("insurance.csv")
+        #self.train_df=os.path.join(datasets,"train.csv")
+        #self.test_df=os.path.join(datasets, "test.csv")
