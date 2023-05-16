@@ -1,0 +1,29 @@
+[2023-05-16 08:04:46,193] root - INFO - export colletion data as pd.DataFrame
+[2023-05-16 08:04:46,194] root - INFO - Reading data from database: INSURANCE and collection: INSURANCE_PROJECT
+[2023-05-16 08:04:47,518] root - INFO - Found total columns: Index(['_id', 'age', 'sex', 'bmi', 'children', 'smoker', 'region', 'charges'], dtype='object')
+[2023-05-16 08:04:47,519] root - INFO - Dropping column: _id
+[2023-05-16 08:04:47,520] root - INFO - Row and columns in df: (1338, 7)
+[2023-05-16 08:04:47,521] root - INFO - save data into feature store
+[2023-05-16 08:04:47,522] root - INFO - create feature store folder, if not available
+[2023-05-16 08:04:47,522] root - INFO - save df to feature store folder
+[2023-05-16 08:04:47,528] root - INFO - spliting data into train and test
+[2023-05-16 08:04:47,530] root - INFO - create dataset_dir if not exist
+[2023-05-16 08:04:47,530] root - INFO - save dataset to feature store after split
+[2023-05-16 08:04:47,534] root - INFO - prepare data_ingestion_artifact
+[2023-05-16 08:04:47,534] root - INFO - Reading base dataframe
+[2023-05-16 08:04:47,537] root - INFO - Replace na value in base df
+[2023-05-16 08:04:47,537] root - INFO - Drop null values colums from base df
+[2023-05-16 08:04:47,537] root - INFO - selecting column name which contains null above to 0.2
+[2023-05-16 08:04:47,538] root - INFO - Columns to drop: []
+[2023-05-16 08:04:47,538] root - INFO - Reading train dataframe
+[2023-05-16 08:04:47,540] root - INFO - Reading test dataframe
+[2023-05-16 08:04:47,542] root - INFO - selecting column name which contains null above to 0.2
+[2023-05-16 08:04:47,542] root - INFO - Columns to drop: []
+[2023-05-16 08:04:47,543] root - INFO - selecting column name which contains null above to 0.2
+[2023-05-16 08:04:47,543] root - INFO - Columns to drop: []
+[2023-05-16 08:04:47,546] root - INFO - Is all required columns present in train df
+[2023-05-16 08:04:47,546] root - INFO - Column: [index is not available.]
+[2023-05-16 08:04:47,546] root - INFO - Is all required columns present in test df
+[2023-05-16 08:04:47,546] root - INFO - Column: [index is not available.]
+[2023-05-16 08:04:47,546] root - INFO - Write reprt in yaml file
+[2023-05-16 08:04:47,547] root - INFO - Data validation artifact: DataValidationArtifact(report_file_path='/home/vinod/projects/Insurance_prediction/artifact/data_validation/report.yaml')

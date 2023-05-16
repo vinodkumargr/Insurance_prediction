@@ -3,7 +3,8 @@ from insurance_pred.exception import InsuranceException
 from insurance_pred.logger import logging
 from scipy.stats import ks_2samp
 from typing import Optional
-import os,sys 
+import os
+import sys
 import pandas as pd
 from insurance_pred import utils
 import numpy as np
@@ -49,7 +50,7 @@ class DataValidation:
 
     def is_required_columns_exists(self,base_df:pd.DataFrame,current_df:pd.DataFrame,report_key_name:str)->bool:
         try:
-           
+        
             base_columns = base_df.columns
             current_columns = current_df.columns
 
@@ -109,9 +110,9 @@ class DataValidation:
             base_df=self.drop_missing_values_columns(df=base_df,report_key_name="missing_values_within_base_dataset")
 
             logging.info(f"Reading train dataframe")
-            train_df = pd.read_csv("/home/vinod/projects/Insurance_prediction/artifact/data_ingestion/dataset/train.csv")
+            train_df = pd.read_csv(self.data_ingestion_artifact.train_file_path)
             logging.info(f"Reading test dataframe")
-            test_df = pd.read_csv("/home/vinod/projects/Insurance_prediction/artifact/data_ingestion/dataset/test.csv")
+            test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
 
             train_df = self.drop_missing_values_columns(df=train_df,report_key_name="missing_values_within_train_dataset")
             test_df = self.drop_missing_values_columns(df=test_df,report_key_name="missing_values_within_test_dataset")

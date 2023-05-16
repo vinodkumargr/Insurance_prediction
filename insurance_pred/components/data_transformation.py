@@ -5,6 +5,7 @@
 
 from insurance_pred.entity import config_entity, artifacts_entity
 from insurance_pred.logger import logging
+from dataclasses import dataclass
 from insurance_pred.exception import InsuranceException
 from insurance_pred import utils
 from sklearn.pipeline import Pipeline
@@ -20,41 +21,37 @@ import pandas as pd
 
 
 
-class DataTransformation:
 
+class DataTransformation:
     def __init__(self, data_transformation_config:config_entity.DataTransformationConfig, 
-                data_ingestion_artifact:artifacts_entity.DataIngestionArtifact):
+                data_ingestion_artifact:artifacts_entity.DataIngestionArtifact
+                ):
         try:
             self.data_transformation_config = data_transformation_config
-            self.data_ingestion_artifact=data_ingestion_artifact
-
+            self.data_ingestion_artifact = data_ingestion_artifact
         except Exception as e:
-            raise InsuranceException(e,sys)
-
-
-
+            raise InsuranceException(e, sys)
 
     @classmethod
-    def get_data_transformer_object(cls)-> Pipeline:
+    def get_data_transformer_object(cls)->Pipeline: # Create cls class
         try:
             simple_imputer = SimpleImputer(strategy='constant', fill_value=0)
             robust_scaler =  RobustScaler()
-
             pipeline = Pipeline(steps=[
                     ('Imputer',simple_imputer),
                     ('RobustScaler',robust_scaler)
                 ])
-            
             return pipeline
-        
         except Exception as e:
             raise InsuranceException(e, sys)
 
 
     def initiate_data_transformation(self,) -> artifacts_entity.DataTransformationArtifact:
         try:
-            train_df = pd.read_csv("/home/vinod/projects/Insurance_prediction/artifact/data_ingestion/dataset/train.csv")
-            test_df = pd.read_csv("/home/vinod/projects/Insurance_prediction/artifact/data_ingestion/dataset/test.csv")
+
+            
+            train_df = pd.read_csv(self.data_ingestion_artifact.train_file_path)
+            test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
             
             input_feature_train_df=train_df.drop(TARGET_COLUMN,axis=1)
             input_feature_test_df=test_df.drop(TARGET_COLUMN,axis=1)
@@ -103,8 +100,8 @@ class DataTransformation:
 
             data_transformation_artifact = artifacts_entity.DataTransformationArtifact(
                 transform_object_path=self.data_transformation_config.transform_object_path,
-                transformed_train_path = self.data_transformation_config.transformed_train_path,
-                transformed_test_path = self.data_transformation_config.transformed_test_path,
+                transform_train_path = self.data_transformation_config.transform_train_path,
+                transform_test_path = self.data_transformation_config.transform_test_path,
                 target_encoder_path = self.data_transformation_config.target_encoder_path
 
             )

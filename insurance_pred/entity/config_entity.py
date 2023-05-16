@@ -11,12 +11,12 @@ TARGET_ENCODER_OBJECT_FILE_NAME="target_encoder.pkl"
 
 
 class TrainingPipelineConfig:
+    
     def __init__(self):
         try:
-            self.artifact_dir = os.path.join(os.getcwd(),"artifact")
-        except Exception as e:
-            raise InsuranceException(e, sys)
-        
+            self.artifact_dir = os.path.join(os.getcwd(),"artifact",f"{datetime.now().strftime('%m%d%Y__%H%M%S')}")
+        except Exception  as e:
+            raise InsuranceException(e,sys) 
 
 class DataIngestionConfig:
     
@@ -52,9 +52,9 @@ class DataValidationConfig:
 
 
 class DataTransformationConfig:
-    def __init__(self, training_pipeline_config:TrainingPipelineConfig):
-        self.data_transformation_dir = os.path.join(self.data_transformation_dir.artifact_dir, "data_transformation")
-        self.transform_object_path = os.path.join(self.data_transformation_dir, "transformed", TRANSFORMER_OBJECT_FILE_NAME)
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+        self.data_transformation_dir = os.path.join(training_pipeline_config.artifact_dir, "data_transformation")
+        self.transform_object_path = os.path.join(self.data_transformation_dir, "transformer", TRANSFORMER_OBJECT_FILE_NAME)
         self.transform_train_path = os.path.join(self.data_transformation_dir, "transformed", TRAIN_FILE_NAME.replace("csv","npz"))
         self.transform_test_path = os.path.join(self.data_transformation_dir, "transformed", TEST_FILE_NAME.replace("csv","npz"))
         self.target_encoder_path = os.path.join(self.data_transformation_dir, "target_encoder", TARGET_ENCODER_OBJECT_FILE_NAME)
