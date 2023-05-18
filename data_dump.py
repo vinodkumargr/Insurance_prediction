@@ -5,7 +5,7 @@ import json
 client = pymongo.MongoClient("mongodb+srv://vinod:insurance_prediction@cluster1.ixse1h4.mongodb.net/?retryWrites=true&w=majority")
 
 
-DATA_FILE_PATH = "C://Insurance_project//Insurance_prediction//insurance.csv"
+DATA_FILE_PATH = "/home/vinod/projects/Insurance_prediction/insurance.csv"
 DATABASE_NAME = "INSURANCE"
 COLLECTION_NAME = "INSURANCE_PROJECT"
 
