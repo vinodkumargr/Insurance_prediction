@@ -20,7 +20,7 @@ class DataValidation:
         try:
             self.data_validation_config = data_validation_config
             self.data_ingestion_artifact=data_ingestion_artifact
-            self.validation_error=dict()
+            self.validation_error=dict{}
         except Exception as e:
             raise InsuranceException(e, sys)
         
