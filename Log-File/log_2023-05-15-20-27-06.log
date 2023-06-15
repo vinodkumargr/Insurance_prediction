@@ -1,2 +1,0 @@
-[2023-05-15 20:27:07,376] root - INFO - export colletion data as pd.DataFrame
-[2023-05-15 20:27:07,377] root - INFO - Reading data from database: INSURANCE and collection: INSURANCE_PROJECT

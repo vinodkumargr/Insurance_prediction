@@ -1,25 +1,23 @@
 from insurance_pred.exception import InsuranceException
 from insurance_pred.logger import logging
-from insurance_pred import utils
 from insurance_pred.components.data_ingestion import DataIngestion
 from insurance_pred.components.data_validation import DataValidation
 from insurance_pred.components.data_transformation import DataTransformation
-from insurance_pred.components.model_trainer import ModelTrainer
 from insurance_pred.components.model_evaluation import ModelEvaluation
+from insurance_pred.components.model_trainer import ModelTrainer
 from insurance_pred.components.model_pusher import ModelPusher
+from insurance_pred import config, utils
 from insurance_pred.entity import config_entity, artifacts_entity
+from insurance_pred.predictor import ModelResolver
 import os, sys
 
 
-
-
-
-if __name__=="__main__":
+def StartTrainingPipeline():
     try:
-        
-        #utils.get_as_df(database_name="online_retail", collection_name="online_retail")
 
         training_pipeline_config = config_entity.TrainingPipelineConfig()
+
+        # data ingestion
         data_ingestion_config = config_entity.DataIngestionConfig(training_pipeline_config=training_pipeline_config)
         print(data_ingestion_config.convert())
 
@@ -65,16 +63,14 @@ if __name__=="__main__":
         model_evaluation_artifact = model_evaluation.initiate_model_evaluation()
 
 
-
         #model pusher:
         model_pusher_config = config_entity.ModelPusherConfig(training_pipeline_config=training_pipeline_config)
         model_pusher = ModelPusher(model_pusher_config=model_pusher_config,
                                 data_transformation_artifact=data_transformation_artifact,
-                                model_trainer_artifact=model_trainer_artifact)
+                                model_evaluation_artifacts=model_evaluation_artifact)
         
         model_evaluation_artifact = model_pusher.initiate_model_pusher()
 
 
-
     except Exception as e:
-        raise InsuranceException(e, sys)
+        raise InsuranceException(e,sys)

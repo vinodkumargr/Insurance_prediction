@@ -1,111 +1,94 @@
-#missing values
-#otliers handling
-#handling imbalance data
-#encoding cat to num
-
-from insurance_pred.entity import config_entity, artifacts_entity
-from insurance_pred.logger import logging
-from dataclasses import dataclass
 from insurance_pred.exception import InsuranceException
-from insurance_pred import utils
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer 
-from sklearn.preprocessing import RobustScaler
-from insurance_pred.config import TARGET_COLUMN
-from sklearn.preprocessing import LabelEncoder
-# if you have imbalance dataset, you use this SMOTE
-# from sklearn.combine import SMOTE
-import os, sys
-import numpy as np
+from insurance_pred.logger import logging
+from insurance_pred.entity import config_entity, artifacts_entity
+from insurance_pred import config, utils
+import os, sys, pickle
 import pandas as pd
-
+import numpy as np
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
 
 
 
 class DataTransformation:
-    def __init__(self, data_transformation_config:config_entity.DataTransformationConfig, 
-                data_ingestion_artifact:artifacts_entity.DataIngestionArtifact
-                ):
+
+    def __init__(self, data_transformation_cofig:config_entity.DataTransformationConfig,
+                        data_validation_artifacts:artifacts_entity.DataValidationArtifact):
         try:
-            self.data_transformation_config = data_transformation_config
-            self.data_ingestion_artifact = data_ingestion_artifact
+            
+            self.data_transformation_config=data_transformation_cofig
+            self.data_validation_artifacts = data_validation_artifacts
+
+        except Exception as e:
+            raise InsuranceException(e, sys)
+        
+
+    def get_transform(self):
+        try:
+            # Select categorical columns
+            categorical_columns = ['sex', 'smoker','region']
+
+            # Initialize the OneHotEncoder
+            encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+
+            # Create a ColumnTransformer for encoding categorical columns
+            transformer = ColumnTransformer([
+                ('one_hot_encoder', encoder, categorical_columns)
+            ], remainder='passthrough')
+
+            return transformer
+
         except Exception as e:
             raise InsuranceException(e, sys)
 
-    @classmethod
-    def get_data_transformer_object(cls)->Pipeline: # Create cls class
+    def initiate_data_transformation(self) -> artifacts_entity.DataTransformationArtifact:
         try:
-            simple_imputer = SimpleImputer(strategy='constant', fill_value=0)
-            robust_scaler =  RobustScaler()
-            pipeline = Pipeline(steps=[
-                    ('Imputer',simple_imputer),
-                    ('RobustScaler',robust_scaler)
-                ])
-            return pipeline
-        except Exception as e:
-            raise InsuranceException(e, sys)
+            logging.info("...................Starting data transformation..................")
 
+            logging.info("reading data from valid_feature_store_file...")
+            train_df = pd.read_csv(self.data_validation_artifacts.valid_train_path)
+            test_df = pd.read_csv(self.data_validation_artifacts.valid_test_path)
 
-    def initiate_data_transformation(self,) -> artifacts_entity.DataTransformationArtifact:
-        try:
+            #split into input and out features
+            input_train_features , out_train_feature = train_df.drop(columns=[config.TARGET_COLUMN], axis=1) , train_df[config.TARGET_COLUMN]
+            input_test_features , out_test_feature = test_df.drop(columns=[config.TARGET_COLUMN], axis=1) , test_df[config.TARGET_COLUMN]
 
-            
-            train_df = pd.read_csv(self.data_ingestion_artifact.train_file_path)
-            test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
-            
-            input_feature_train_df=train_df.drop(TARGET_COLUMN,axis=1)
-            input_feature_test_df=test_df.drop(TARGET_COLUMN,axis=1)
+            # Get the transformer object
+            transformer = self.get_transform()
 
-            target_feature_train_df = train_df[TARGET_COLUMN]
-            target_feature_test_df = test_df[TARGET_COLUMN]
+            # Perform the transformation on the train and test data
+            input_train_preprocessing_arr = transformer.fit_transform(input_train_features)
+            input_test_preprocessing_arr = transformer.transform(input_test_features)
 
-            label_encoder = LabelEncoder()
-
-            target_feature_train_arr = target_feature_train_df.squeeze()
-            target_feature_test_arr = target_feature_test_df.squeeze()
-
-            for col in input_feature_train_df.columns:
-                if input_feature_test_df[col].dtypes == 'O':
-                    input_feature_train_df[col] = label_encoder.fit_transform(input_feature_train_df[col])
-                    input_feature_test_df[col] = label_encoder.fit_transform(input_feature_test_df[col])
-                else:
-                    input_feature_train_df[col] = input_feature_train_df[col]
-                    input_feature_test_df[col] = input_feature_test_df[col]
-
-            transformation_pipleine = DataTransformation.get_data_transformer_object()
-            transformation_pipleine.fit(input_feature_train_df)
-
-            input_feature_train_arr = transformation_pipleine.transform(input_feature_train_df)
-            input_feature_test_arr = transformation_pipleine.transform(input_feature_test_df)
-            
-            train_arr = np.c_[input_feature_train_arr, target_feature_train_arr ]
-            test_arr = np.c_[input_feature_test_arr, target_feature_test_arr]
-
+            # combine the input arr and output feature
+            train_arr = np.c_[input_train_preprocessing_arr , np.array(out_train_feature)]
+            test_arr = np.c_[input_test_preprocessing_arr , np.array(out_test_feature)]
 
             utils.save_numpy_array_data(file_path=self.data_transformation_config.transform_train_path,
                                         array=train_arr)
-
             utils.save_numpy_array_data(file_path=self.data_transformation_config.transform_test_path,
-                                        array=test_arr)           
+                                        array=test_arr)
+
+        
+            # Save the pre-processing object
+            utils.save_object(file_path=self.data_transformation_config.pre_process_object_path,
+                            obj=transformer)
 
 
-            
-            utils.save_object(file_path=self.data_transformation_config.transform_object_path,
-                            obj=transformation_pipleine)
-
-            utils.save_object(file_path=self.data_transformation_config.target_encoder_path,
-                            obj=label_encoder)
+            # save the data from data validation(helps in loading unique values in single prediction)
+            data_obj = pd.read_csv(self.data_validation_artifacts.valid_train_path)
+            utils.save_object(file_path=self.data_transformation_config.single_pred_data_path,
+                              obj=data_obj)
 
 
 
-            data_transformation_artifact = artifacts_entity.DataTransformationArtifact(
-                transform_object_path=self.data_transformation_config.transform_object_path,
-                transform_train_path = self.data_transformation_config.transform_train_path,
-                transform_test_path = self.data_transformation_config.transform_test_path,
-                target_encoder_path = self.data_transformation_config.target_encoder_path
+            data_transformation_Artifact=artifacts_entity.DataTransformationArtifact(
+                transform_train_path=self.data_transformation_config.transform_train_path,
+                transform_test_path=self.data_transformation_config.transform_test_path,
+                pre_process_object_path = self.data_transformation_config.pre_process_object_path)
 
-            )
+            logging.info("returning data transformatin artifact")
+            return data_transformation_Artifact
 
-            return data_transformation_artifact
         except Exception as e:
             raise InsuranceException(e, sys)

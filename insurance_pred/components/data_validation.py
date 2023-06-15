@@ -1,147 +1,98 @@
-from insurance_pred.entity import config_entity, artifacts_entity
-from insurance_pred.exception import InsuranceException
 from insurance_pred.logger import logging
-from scipy.stats import ks_2samp
-from typing import Optional
-import os
-import sys
-import pandas as pd
+from insurance_pred.exception import InsuranceException
+from insurance_pred.entity import config_entity, artifacts_entity
+from insurance_pred import config
 from insurance_pred import utils
+import pandas as pd
 import numpy as np
-from insurance_pred.config import TARGET_COLUMN
+import sys
+from typing import Optional
 
 
 class DataValidation:
 
-
-    def __init__(self,
-                    data_validation_config:config_entity.DataValidationConfig,
-                    data_ingestion_artifact:artifacts_entity.DataIngestionArtifact):
-        try:
-            self.data_validation_config = data_validation_config
-            self.data_ingestion_artifact=data_ingestion_artifact
-            self.validation_error=dict()
-        except Exception as e:
-            raise InsuranceException(e, sys)
-        
-    
-
-    def drop_missing_values_columns(self,df:pd.DataFrame,report_key_name:str)->Optional[pd.DataFrame]:
-      
+    def __init__(self, data_validation_config:config_entity.DataValidationConfig,
+                    data_ingestion_artifacts:artifacts_entity.DataIngestionArtifact):
         try:
             
-            threshold = self.data_validation_config.missing_threshold
-            null_report = df.isna().sum()/df.shape[0]
-            #selecting column name which contains null
-            logging.info(f"selecting column name which contains null above to {threshold}")
-            drop_column_names = null_report[null_report>threshold].index
+            self.data_validation_config=data_validation_config
+            self.data_ingestion_artifacts=data_ingestion_artifacts
 
-            logging.info(f"Columns to drop: {list(drop_column_names)}")
-            self.validation_error[report_key_name]=list(drop_column_names)
-            df.drop(list(drop_column_names),axis=1,inplace=True)
+        except Exception as e:
+            raise InsuranceException(e,sys)
 
-            #return None no columns left
-            if len(df.columns)==0:
-                return None
+
+
+    def drop_null_value_rows(self, df:pd.DataFrame)->Optional[pd.DataFrame]:
+        try:
+            
+            df = df.dropna(axis=0)
+            
+            logging.info(f"now shape of df : {df.shape}")
+
+            return df
+
+        except Exception as e:
+            raise InsuranceException(e,sys)
+
+    def drop_index_column(self, df:pd.DataFrame)->Optional[pd.DataFrame]:
+        try:
+
+            df = df.drop(columns=['index'], axis=1)
+            
+            logging.info(f"now shape of df : {df.shape}")
+
+            return df
+
+        except Exception as e:
+            raise InsuranceException(e,sys)
+        
+    def output_col_into_int(self, df:pd.DataFrame)-> Optional[pd.DataFrame]:
+        try:
+
+            df['charges'] = df.charges.astype(int)
+
             return df
         except Exception as e:
-            raise InsuranceException(e, sys)
-        
-
-    def is_required_columns_exists(self,base_df:pd.DataFrame,current_df:pd.DataFrame,report_key_name:str)->bool:
-        try:
-        
-            base_columns = base_df.columns
-            current_columns = current_df.columns
-
-            missing_columns = []
-            for base_column in base_columns:
-                if base_column not in current_columns:
-                    logging.info(f"Column: [{base_column} is not available.]")
-                    missing_columns.append(base_column)
-            
-            if len(missing_columns)>0:
-                self.validation_error[report_key_name]=missing_columns
-                return False
-            return True
-        except Exception as e:
-            raise InsuranceException(e, sys)
-
-    def data_drift(self, base_df: pd.DataFrame, current_df: pd.DataFrame, report_key_name: str):
-        try:
-            drift_report = dict()
-            base_columns = base_df.columns
-            current_columns = current_df.columns
-
-            for base_column in base_columns:
-                base_data, current_data = base_df[base_column], current_df[base_column]
-
-                same_distribution = ks_2samp(base_data, current_data)
-
-                if same_distribution.pvalue > 0.05:
-                    # We are accepting the null hypothesis
-                    drift_report[base_column] = {
-                        "pvalues": float(same_distribution.pvalue),
-                        "same_distribution": True
-                    }
-                else:
-                    drift_report[base_column] = {
-                        "pvalues": float(same_distribution.pvalue),
-                        "same_distribution": False
-                    }
-
-                self.validation_error[report_key_name] = drift_report
-
-        except Exception as e:
-            raise InsuranceException(e, sys)
-
-                    
-    
+            raise InsuranceException(e,sys)
+               
 
     def initiate_data_validation(self)->artifacts_entity.DataValidationArtifact:
         try:
-            logging.info(f"Reading base dataframe")
-            base_df = pd.read_csv(self.data_validation_config.base_file_path)
-            base_df.replace({"na":np.NAN},inplace=True)
-            logging.info(f"Replace na value in base df")
+            logging.info("data validation started........")
+
+            train_df = pd.read_csv(self.data_ingestion_artifacts.train_data_path)
+            test_df = pd.read_csv(self.data_ingestion_artifacts.test_data_path)
+
+            logging.info(f"dropping null values")
+            train_df = self.drop_null_value_rows(df=train_df)
+            test_df = self.drop_null_value_rows(df=test_df,)
+        
+            # drop_index_column
+            logging.info(f"drop_index_column ")
+            train_df=self.drop_index_column(df=train_df)
+            test_df=self.drop_index_column(df=test_df)
+
+            #convert taget col into int:
+            train_df = self.output_col_into_int(df=train_df)
+            test_df = self.output_col_into_int(df=test_df)
+
+
+            train_df.to_csv(path_or_buf=self.data_validation_config.valid_train_path, index=False, header=True)
+            test_df.to_csv(path_or_buf=self.data_validation_config.valid_test_path, index=False, header=True)
+
+
+            logging.info("data validation is almost done")
+
+            data_validation_artifact = artifacts_entity.DataValidationArtifact(
+                valid_train_path = self.data_validation_config.valid_train_path,
+                valid_test_path= self.data_validation_config.valid_test_path)
             
-            #base_df has na as null
-            logging.info(f"Drop null values colums from base df")
-            base_df=self.drop_missing_values_columns(df=base_df,report_key_name="missing_values_within_base_dataset")
-
-            logging.info(f"Reading train dataframe")
-            train_df = pd.read_csv(self.data_ingestion_artifact.train_file_path)
-            logging.info(f"Reading test dataframe")
-            test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
-
-            train_df = self.drop_missing_values_columns(df=train_df,report_key_name="missing_values_within_train_dataset")
-            test_df = self.drop_missing_values_columns(df=test_df,report_key_name="missing_values_within_test_dataset")
-            
-            exclude_columns = [TARGET_COLUMN]
-            base_df = utils.convert_columns_into_float(df=base_df, exclude_columns=exclude_columns)
-            train_df = utils.convert_columns_into_float(df=train_df, exclude_columns=exclude_columns)
-            test_df = utils.convert_columns_into_float(df=test_df, exclude_columns=exclude_columns)
+            logging.info("returning data_validation_artifact")
 
 
-            logging.info(f"Is all required columns present in train df")
-            train_df_columns_status = self.is_required_columns_exists(base_df=base_df, current_df=train_df,report_key_name="missing_columns_within_train_dataset")
-            logging.info(f"Is all required columns present in test df")
-            test_df_columns_status = self.is_required_columns_exists(base_df=base_df, current_df=test_df,report_key_name="missing_columns_within_test_dataset")
-
-            if train_df_columns_status:
-                logging.info(f"As all column are available in train df hence detecting data drift")
-                self.data_drift(base_df=base_df, current_df=train_df,report_key_name="data_drift_within_train_dataset")
-            if test_df_columns_status:
-                logging.info(f"As all column are available in test df hence detecting data drift")
-                self.data_drift(base_df=base_df, current_df=test_df,report_key_name="data_drift_within_test_dataset")
-          
-            #write the report
-            logging.info("Write reprt in yaml file")
-            utils.write_into_yaml(file_path=self.data_validation_config.report_file_path,
-            data=self.validation_error)
-
-            data_validation_artifact = artifacts_entity.DataValidationArtifact(report_file_path=self.data_validation_config.report_file_path,)
-            logging.info(f"Data validation artifact: {data_validation_artifact}")
             return data_validation_artifact
+
         except Exception as e:
-            raise InsuranceException(e, sys)
+            raise InsuranceException(e,sys)
+
