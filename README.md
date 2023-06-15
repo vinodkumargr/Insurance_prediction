@@ -43,7 +43,7 @@ The model's performance is evaluated using appropriate evaluation metrics such a
 
 To use this project, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/your-username/insurance-premium-prediction.git`
+1. Clone the repository: `https://github.com/vinodkumargr/Insurance_prediction.git`
 2. Install the required dependencies: `pip install -r requirements.txt`
 3. Explore the Jupyter Notebook or Python scripts to understand the data preprocessing, model development, and evaluation steps.
 4. Modify the code or dataset as needed to adapt it to your specific use case.
